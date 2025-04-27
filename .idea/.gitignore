@@ -6,3 +6,48 @@
 # Datasource local storage ignored files
 /dataSources/
 /dataSources.local.xml
+
+# Ignore Python bytecode files
+__pycache__/
+*.pyc
+*.pyo
+
+# Ignore Jupyter notebook checkpoints
+.ipynb_checkpoints/
+
+# Ignore virtual environment directories 
+venv/
+env/
+
+# Ignore IDE/editor config files 
+.vscode/
+.idea/
+
+# Ignore Python package distribution files
+*.egg
+*.egg-info/
+dist/
+build/
+*.tar.gz
+
+# Ignore logs or test output files
+*.log
+*.out
+*.err
+*.csv
+
+# Ignore environment-specific files 
+*.env
+*.local
+
+# Ignore any other temporary files
+*.bak
+*.swp
+
+# Ignore any output directory or file from dev_test.ipynb if not needed
+*.png
+*.pdf
+
+# Ignore other common unnecessary files
+.DS_Store   # macOS
+Thumbs.db   # Windows
