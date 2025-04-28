@@ -57,3 +57,17 @@ def calculate_P_matrix(distances_original=None, X_original=None, perplexity=30, 
 def show_P_heatmap(distances_original=None, X_original=None, perplexity=30, n_steps=100, tolerance = 1e-5, title='P matrix heatmap'):
     P = calculate_P_matrix(distances_original, X_original, perplexity, n_steps, tolerance)
     return matrix_heatmap(P, title)
+
+def calculate_Q_matrix(distances_embedded=None, X_embedded=None):
+    if X_embedded is not None:
+        distances_embedded = metrics.pairwise_distances(X_embedded)
+    sq_distances_embedded = distances_embedded ** 2
+
+    Q = (1 + sq_distances_embedded) ** (-1)
+    np.fill_diagonal(Q, 0)
+    Q = Q / np.sum(Q)
+    return Q
+
+def show_Q_heatmap(distances_embedded=None, X_embedded=None, title='Q matrix heatmap'):
+    Q = calculate_Q_matrix(distances_embedded, X_embedded)
+    return matrix_heatmap(Q, title)
