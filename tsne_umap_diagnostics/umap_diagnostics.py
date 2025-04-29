@@ -12,8 +12,8 @@ def calculate_V_matrix(distances_original=None, indices=None, X_original=None ,k
 
     n = distances_original.shape[0]
     desired_value = np.log2(k_neighbours)  # for binary search
-    distances = distances_original[:, 1:]  # Remove the first column (self-reference) from distances
-    indices = indices[:, 1:]      # Remove the first column (self-reference) from indices
+    distances = distances_original[:, 1:]  # self-reference
+    indices = indices[:, 1:]      # self-reference
     k_neighbours -= 1
     # A 1D array of rho_i
     rhos = distances[:, 0]
@@ -59,3 +59,17 @@ def calculate_V_matrix(distances_original=None, indices=None, X_original=None ,k
 def show_V_heatmap(distances_original=None, indices=None, X_original=None ,k_neighbours=15, n_steps=100, tolerance = 1e-5, title='V matrix heatmap'):
     V = calculate_V_matrix(distances_original, indices, X_original ,k_neighbours, n_steps, tolerance)
     return matrix_heatmap(V, title)
+
+def calculate_W_matrix(distances_embedded=None, X_embedded=None, use_approximation=False, min_dist=0.1, spread=1.0):
+    if X_embedded is not None:
+        distances_embedded = metrics.pairwise_distances(X_embedded, metric='euclidean')
+
+    if use_approximation:
+        return approximate_W(distances_embedded=distances_embedded, min_dist=min_dist, spread=spread)
+
+    W = np.where(distances_embedded <= min_dist, 1, np.exp(-distances_embedded - min_dist))
+    np.fill_diagonal(W, 0)
+    return W
+
+def approximate_W(distances_embedded, min_dist=0.1, spread=1.0):
+    pass
