@@ -2,6 +2,7 @@ import numpy as np
 import sklearn.metrics as metrics
 from sklearn.neighbors import NearestNeighbors
 from scipy.sparse import coo_matrix
+from scipy.optimize import curve_fit
 from .plotting import matrix_heatmap
 
 def calculate_V_matrix(distances_original=None, indices=None, X_original=None ,k_neighbours=15, n_steps=100, tolerance = 1e-5):
@@ -72,4 +73,20 @@ def calculate_W_matrix(distances_embedded=None, X_embedded=None, use_approximati
     return W
 
 def approximate_W(distances_embedded, min_dist=0.1, spread=1.0):
-    pass
+    distances_sqr = distances_embedded ** 2
+
+    def curve(x, a, b):
+        return 1 / (1 + a * x ** (2 * b))
+
+    xdata = np.linspace(0, spread * 3, 300)
+    ydata = np.zeros_like(xdata)
+    ydata[xdata <= min_dist] = 1
+    ydata[xdata > min_dist] = np.exp(-(xdata[xdata > min_dist] - min_dist) / spread)
+    params, _ = curve_fit(curve, xdata, ydata)
+    W_approx = curve(distances_sqr, params[0], params[1])
+    np.fill_diagonal(W_approx, 0)
+    return W_approx
+
+def show_W_heatmap(distances_embedded=None, X_embedded=None, use_approximation=False, min_dist=0.1, spread=1.0, title='W matrix heatmap'):
+    W = calculate_W_matrix(distances_embedded, X_embedded, use_approximation, min_dist, spread)
+    return matrix_heatmap(W, title)
