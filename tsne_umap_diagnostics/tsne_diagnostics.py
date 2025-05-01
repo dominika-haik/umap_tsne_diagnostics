@@ -54,9 +54,9 @@ def calculate_P_matrix(distances_original=None, X_original=None, perplexity=30, 
     P = (P + P.T) / (2 * n_samples)
     return P
 
-def show_P_heatmap(distances_original=None, X_original=None, perplexity=30, n_steps=100, tolerance = 1e-5, title='P matrix heatmap', vmin=None, vmax=None):
+def show_P_heatmap(distances_original=None, X_original=None, perplexity=30, n_steps=100, tolerance = 1e-5, title='P matrix heatmap', vmin=None, vmax=None, ax=None):
     P = calculate_P_matrix(distances_original, X_original, perplexity, n_steps, tolerance)
-    return matrix_heatmap(P, title, vmin=vmin, vmax=vmax)
+    return matrix_heatmap(P, title, vmin=vmin, vmax=vmax, ax=ax)
 
 def calculate_Q_matrix(distances_embedded=None, X_embedded=None):
     if X_embedded is not None:
@@ -68,6 +68,6 @@ def calculate_Q_matrix(distances_embedded=None, X_embedded=None):
     Q = Q / np.sum(Q)
     return Q
 
-def show_Q_heatmap(distances_embedded=None, X_embedded=None, title='Q matrix heatmap', vmin=None, vmax=None):
+def show_Q_heatmap(distances_embedded=None, X_embedded=None, title='Q matrix heatmap', vmin=None, vmax=None, ax=None):
     Q = calculate_Q_matrix(distances_embedded, X_embedded)
-    return matrix_heatmap(Q, title, vmin=vmin, vmax=vmax)
+    return matrix_heatmap(Q, title, vmin=vmin, vmax=vmax, ax=ax)

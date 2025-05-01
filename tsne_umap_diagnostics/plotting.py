@@ -3,7 +3,14 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-def plot_distances(X_original, X_embedded, title):
+def plot_distances(X_original, X_embedded, title, ax=None):
+    created_fig = False
+    if ax is None:
+        fig, ax = plt.subplots()
+        created_fig = True
+    else:
+        fig = ax.figure
+
     X_original = _upper_tri(X_original)
     X_embedded = _upper_tri(X_embedded)
 
@@ -12,15 +19,21 @@ def plot_distances(X_original, X_embedded, title):
         'Reduced Distance': X_embedded
     })
 
-    fig, ax = plt.subplots()
     sns.scatterplot(data=data, x='Original Distance', y='Reduced Distance', alpha=0.2, ax=ax)
     sns.despine()
     ax.set_title(title)
     ax.set_xlabel("High-dimensional Distance")
     ax.set_ylabel("Low-dimensional Distance")
-    return fig
+    return fig if created_fig else None
 
-def plot_similarities(hd_matrix, ld_matrix, asymmetric_matrix, title):
+def plot_similarities(hd_matrix, ld_matrix, asymmetric_matrix, title, ax=None):
+    created_fig = False
+    if ax is None:
+        fig, ax = plt.subplots()
+        created_fig = True
+    else:
+        fig = ax.figure
+
     if not asymmetric_matrix:
         hd_matrix = _upper_tri(hd_matrix)
         ld_matrix = _upper_tri(ld_matrix)
@@ -30,23 +43,28 @@ def plot_similarities(hd_matrix, ld_matrix, asymmetric_matrix, title):
         'Similarity in Embedding': ld_matrix.flatten()
     })
 
-    fig, ax = plt.subplots()
     sns.scatterplot(data=data, x='Original Similarity', y='Similarity in Embedding', alpha=0.2, ax=ax)
     sns.despine()
     ax.set_title(title)
     ax.set_xlabel("High-dimensional Similarity")
     ax.set_ylabel("Low-dimensional Similarity")
-    return fig
+    return fig if created_fig else None
 
 
-def matrix_heatmap(matrix, title='Matrix heatmap', vmin=None, vmax=None):
-    fig, ax = plt.subplots()
+def matrix_heatmap(matrix, title='Matrix heatmap', vmin=None, vmax=None, ax=None):
+    created_fig = False
+    if ax is None:
+        fig, ax = plt.subplots()
+        created_fig = True
+    else:
+        fig = ax.figure
+
     sns.heatmap(matrix, cmap='YlGnBu', annot=False, fmt='.2f', cbar_kws={'label': 'Similarity'},
                 xticklabels=False, yticklabels=False, vmin=vmin, vmax=vmax, ax=ax)
     ax.set_title(title)
     ax.set_xlabel('Sample')
     ax.set_ylabel('Sample')
-    return fig
+    return fig if created_fig else None
 
 def _upper_tri(A):
     m = A.shape[0]
