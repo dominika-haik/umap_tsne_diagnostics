@@ -1,4 +1,3 @@
-import numpy as np
 import sklearn.metrics as metrics
 from .plotting import plot_distances, plot_similarities
 from .umap_diagnostics import calculate_V_matrix, calculate_W_matrix
