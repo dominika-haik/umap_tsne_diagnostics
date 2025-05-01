@@ -59,7 +59,7 @@ def matrix_heatmap(matrix, title='Matrix heatmap', vmin=None, vmax=None, ax=None
     else:
         fig = ax.figure
 
-    sns.heatmap(matrix, cmap='YlGnBu', annot=False, fmt='.2f', cbar_kws={'label': 'Similarity'},
+    sns.heatmap(matrix, cmap='YlGnBu', annot=False, fmt='.2f', cbar_kws={'label': 'Similarity'}, square=True,
                 xticklabels=False, yticklabels=False, vmin=vmin, vmax=vmax, ax=ax)
     ax.set_title(title)
     ax.set_xlabel('Sample')
