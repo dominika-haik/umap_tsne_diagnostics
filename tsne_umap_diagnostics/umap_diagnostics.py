@@ -57,9 +57,9 @@ def calculate_V_matrix(distances_original=None, indices=None, X_original=None ,k
     V = V + V.T - V * V.T
     return V
 
-def show_V_heatmap(distances_original=None, indices=None, X_original=None ,k_neighbours=15, n_steps=100, tolerance = 1e-5, title='V matrix heatmap'):
+def show_V_heatmap(distances_original=None, indices=None, X_original=None ,k_neighbours=15, n_steps=100, tolerance = 1e-5, title='V matrix heatmap', vmin=None, vmax=None):
     V = calculate_V_matrix(distances_original, indices, X_original ,k_neighbours, n_steps, tolerance)
-    return matrix_heatmap(V, title)
+    return matrix_heatmap(V, title, vmin=vmin, vmax=vmax)
 
 def calculate_W_matrix(distances_embedded=None, X_embedded=None, use_approximation=False, min_dist=0.1, spread=1.0):
     if X_embedded is not None:
@@ -87,6 +87,6 @@ def approximate_W(distances_embedded, min_dist=0.1, spread=1.0):
     np.fill_diagonal(W_approx, 0)
     return W_approx
 
-def show_W_heatmap(distances_embedded=None, X_embedded=None, use_approximation=False, min_dist=0.1, spread=1.0, title='W matrix heatmap'):
+def show_W_heatmap(distances_embedded=None, X_embedded=None, use_approximation=False, min_dist=0.1, spread=1.0, title='W matrix heatmap', vmin=None, vmax=None):
     W = calculate_W_matrix(distances_embedded, X_embedded, use_approximation, min_dist, spread)
-    return matrix_heatmap(W, title)
+    return matrix_heatmap(W, title, vmin=vmin, vmax=vmax)

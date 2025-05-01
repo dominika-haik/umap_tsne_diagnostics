@@ -39,10 +39,10 @@ def plot_similarities(hd_matrix, ld_matrix, asymmetric_matrix, title):
     return fig
 
 
-def matrix_heatmap(matrix, title='Matrix heatmap'):
+def matrix_heatmap(matrix, title='Matrix heatmap', vmin=None, vmax=None):
     fig, ax = plt.subplots()
     sns.heatmap(matrix, cmap='YlGnBu', annot=False, fmt='.2f', cbar_kws={'label': 'Similarity'},
-                xticklabels=False, yticklabels=False, ax=ax)
+                xticklabels=False, yticklabels=False, vmin=vmin, vmax=vmax, ax=ax)
     ax.set_title(title)
     ax.set_xlabel('Sample')
     ax.set_ylabel('Sample')
