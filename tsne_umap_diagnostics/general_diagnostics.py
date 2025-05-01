@@ -1,10 +1,9 @@
 import sklearn.metrics as metrics
 import matplotlib.pyplot as plt
-from IPython.core.pylabtools import figsize
 
-from .plotting import plot_distances, plot_similarities
-from .umap_diagnostics import calculate_V_matrix, calculate_W_matrix, show_V_heatmap, show_W_heatmap
-from .tsne_diagnostics import calculate_P_matrix, calculate_Q_matrix, show_P_heatmap, show_Q_heatmap
+from .plotting import plot_distances, plot_similarities, _hierarchical_sort_order, _apply_sort_order, matrix_heatmap
+from .umap_diagnostics import calculate_V_matrix, calculate_W_matrix
+from .tsne_diagnostics import calculate_P_matrix, calculate_Q_matrix
 
 def distance_fit_plot(distances_original=None, distances_embedded=None, X_original=None, X_embedded=None, title='Fit plot of the original and embedded distances', ax=None):
     if X_original is not None and X_embedded is not None:
@@ -58,11 +57,21 @@ def diagnostic_plots(distances_original=None, distances_embedded=None, X_origina
                     perplexity, n_steps, tolerance, k_neighbours, min_dist, spread,
                     ax=ax2)
     if method == 'tsne':
-        show_P_heatmap(distances_original, X_original, perplexity, n_steps, tolerance, vmin=vmin, vmax=vmax, ax=ax3)
-        show_Q_heatmap(distances_embedded, X_embedded, vmin=vmin, vmax=vmax, ax=ax4)
+        P = calculate_P_matrix(distances_original, X_original, perplexity, n_steps, tolerance)
+        order = _hierarchical_sort_order(P)
+        P = _apply_sort_order(P, order)
+        Q = calculate_Q_matrix(distances_embedded, X_embedded)
+        Q = _apply_sort_order(Q, order)
+        matrix_heatmap(P, title='P matrix heatmap', vmin=vmin, vmax=vmax, ax=ax3)
+        matrix_heatmap(Q, title='Q matrix heatmap',vmin=vmin, vmax=vmax, ax=ax4)
     elif method == 'umap':
-        show_V_heatmap(distances_original, umap_knn_indices, X_original, k_neighbours, n_steps, tolerance, vmin=vmin, vmax=1, ax=ax3)
-        show_W_heatmap(distances_embedded, X_embedded, umap_approx_W, min_dist, spread, vmin=vmin, vmax=1, ax=ax4)
+        V = calculate_V_matrix(distances_original, umap_knn_indices, X_original, k_neighbours, n_steps, tolerance)
+        order = _hierarchical_sort_order(V)
+        V = _apply_sort_order(V, order)
+        W = calculate_W_matrix(distances_embedded, X_embedded, umap_approx_W, min_dist, spread)
+        W = _apply_sort_order(W, order)
+        matrix_heatmap(V, title='V matrix heatmap',vmin=vmin, vmax=1, ax=ax3)
+        matrix_heatmap(W, title='W matrix heatmap',vmin=vmin, vmax=1, ax=ax4)
     else:
         raise ValueError('Method must be either "tsne" or "umap"')
 

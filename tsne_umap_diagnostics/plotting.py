@@ -2,6 +2,8 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+import scipy.cluster.hierarchy as hierarchy
+from scipy.spatial.distance import squareform
 
 def plot_distances(X_original, X_embedded, title, ax=None):
     created_fig = False
@@ -59,6 +61,8 @@ def matrix_heatmap(matrix, title='Matrix heatmap', vmin=None, vmax=None, ax=None
     else:
         fig = ax.figure
 
+    #matrix = _hierarchical_sort(matrix)
+
     sns.heatmap(matrix, cmap='YlGnBu', annot=False, fmt='.2f', cbar_kws={'label': 'Similarity'}, square=True,
                 xticklabels=False, yticklabels=False, vmin=vmin, vmax=vmax, ax=ax)
     ax.set_title(title)
@@ -71,3 +75,18 @@ def _upper_tri(A):
     r = np.arange(m)
     mask = r[:, None] < r
     return A[mask]
+
+def _hierarchical_sort_order(matrix):
+    D = 1 - matrix  # turn similarity into dissimilarity (distance)
+    np.fill_diagonal(D, 0)
+    D_condense = squareform(D)
+    clustering = hierarchy.linkage(D_condense)
+    leaves_order = hierarchy.leaves_list(clustering)
+    return leaves_order
+
+def _apply_sort_order(matrix, order):
+    return matrix[np.ix_(order, order)]
+
+def _hsort(matrix):
+    order = _hierarchical_sort_order(matrix)
+    return _apply_sort_order(matrix, order)
