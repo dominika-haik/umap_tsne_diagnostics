@@ -5,7 +5,7 @@ import seaborn as sns
 import scipy.cluster.hierarchy as hierarchy
 from scipy.spatial.distance import squareform
 
-def plot_distances(X_original, X_embedded, title, ax=None):
+def plot_distances(distances_original, distances_embedded, title, ax=None):
     created_fig = False
     if ax is None:
         fig, ax = plt.subplots()
@@ -13,12 +13,12 @@ def plot_distances(X_original, X_embedded, title, ax=None):
     else:
         fig = ax.figure
 
-    X_original = _upper_tri(X_original)
-    X_embedded = _upper_tri(X_embedded)
+    distances_original = _upper_tri(distances_original)
+    distances_embedded = _upper_tri(distances_embedded)
 
     data = pd.DataFrame({
-        'Original Distance': X_original,
-        'Reduced Distance': X_embedded
+        'Original Distance': distances_original,
+        'Reduced Distance': distances_embedded
     })
 
     sns.scatterplot(data=data, x='Original Distance', y='Reduced Distance', alpha=0.2, ax=ax)

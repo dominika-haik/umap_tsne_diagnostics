@@ -62,7 +62,7 @@ def calculate_V_matrix(distances_original=None, indices=None, X_original=None ,k
 def show_V_heatmap(distances_original=None, indices=None, X_original=None ,k_neighbours=15, n_steps=100, tolerance = 1e-5, title='V matrix heatmap', vmin=0, vmax=1, ax=None):
     V = calculate_V_matrix(distances_original, indices, X_original ,k_neighbours, n_steps, tolerance)
     V = _hsort(V)
-    return matrix_heatmap(V, title, vmin=vmin, vmax=vmax, ax=ax)
+    return matrix_heatmap(matrix=V, title=title, vmin=vmin, vmax=vmax, ax=ax)
 
 def calculate_W_matrix(distances_embedded=None, X_embedded=None, use_approximation=False, min_dist=0.1, spread=1.0):
     if X_embedded is not None:
@@ -91,6 +91,6 @@ def approximate_W(distances_embedded, min_dist=0.1, spread=1.0):
     return W_approx
 
 def show_W_heatmap(distances_embedded=None, X_embedded=None, use_approximation=False, min_dist=0.1, spread=1.0, title='W matrix heatmap', vmin=0, vmax=1, ax=None):
-    W = calculate_W_matrix(distances_embedded, X_embedded, use_approximation, min_dist, spread)
+    W = calculate_W_matrix(distances_embedded=distances_embedded, X_embedded=X_embedded, use_approximation=use_approximation, min_dist=min_dist, spread=spread)
     W = _hsort(W)
-    return matrix_heatmap(W, title, vmin=vmin, vmax=vmax, ax=ax)
+    return matrix_heatmap(matrix=W, title=title, vmin=vmin, vmax=vmax, ax=ax)

@@ -10,7 +10,7 @@ def distance_fit_plot(distances_original=None, distances_embedded=None, X_origin
         distances_original = metrics.pairwise_distances(X_original)
         distances_embedded = metrics.pairwise_distances(X_embedded)
 
-    return plot_distances(distances_original, distances_embedded, title=title, ax=ax)
+    return plot_distances(distances_original=distances_original, distances_embedded=distances_embedded, title=title, ax=ax)
 
 def matrix_fit_plot_from_matrices(hd_matrix, ld_matrix, asymmetric_matrix=False, title='Fit plot of similarities in high and low dimensions', ax=None):
     return plot_similarities(hd_matrix=hd_matrix, ld_matrix=ld_matrix, asymmetric_matrix=asymmetric_matrix, title=title, ax=ax)
@@ -51,24 +51,24 @@ def diagnostic_plots(distances_original=None, distances_embedded=None, X_origina
     ax1, ax2 = axs[0]
     ax3, ax4 = axs[1]
 
-    distance_fit_plot(distances_original, distances_embedded, X_original, X_embedded, ax=ax1)
-    matrix_fit_plot(distances_original, distances_embedded, X_original, X_embedded,
-                    method, asymmetric_matrix, umap_knn_indices, umap_approx_W,
-                    perplexity, n_steps, tolerance, k_neighbours, min_dist, spread,
+    distance_fit_plot(distances_original=distances_original, distances_embedded=distances_embedded, X_original=X_original, X_embedded=X_embedded, ax=ax1)
+    matrix_fit_plot(distances_original=distances_original, distances_embedded=distances_embedded, X_original=X_original, X_embedded=X_embedded,
+                    method=method, asymmetric_matrix=asymmetric_matrix, umap_knn_indices=umap_knn_indices, umap_approx_W=umap_approx_W,
+                    perplexity=perplexity, n_steps=n_steps, tolerance=tolerance, k_neighbours=k_neighbours, min_dist=min_dist, spread=spread,
                     ax=ax2)
     if method == 'tsne':
-        P = calculate_P_matrix(distances_original, X_original, perplexity, n_steps, tolerance)
+        P = calculate_P_matrix(distances_original=distances_original, X_original=X_original, perplexity=perplexity, n_steps=n_steps, tolerance=tolerance)
         order = _hierarchical_sort_order(P)
         P = _apply_sort_order(P, order)
-        Q = calculate_Q_matrix(distances_embedded, X_embedded)
+        Q = calculate_Q_matrix(distances_embedded=distances_embedded, X_embedded=X_embedded)
         Q = _apply_sort_order(Q, order)
-        matrix_heatmap(P, title='P matrix heatmap', vmin=vmin, vmax=vmax, ax=ax3)
-        matrix_heatmap(Q, title='Q matrix heatmap',vmin=vmin, vmax=vmax, ax=ax4)
+        matrix_heatmap(matrix=P, title='P matrix heatmap', vmin=vmin, vmax=vmax, ax=ax3)
+        matrix_heatmap(matrix=Q, title='Q matrix heatmap',vmin=vmin, vmax=vmax, ax=ax4)
     elif method == 'umap':
-        V = calculate_V_matrix(distances_original, umap_knn_indices, X_original, k_neighbours, n_steps, tolerance)
+        V = calculate_V_matrix(distances_original=distances_original, indices=umap_knn_indices, X_original=X_original, k_neighbours=k_neighbours, n_steps=n_steps, tolerance=tolerance)
         order = _hierarchical_sort_order(V)
         V = _apply_sort_order(V, order)
-        W = calculate_W_matrix(distances_embedded, X_embedded, umap_approx_W, min_dist, spread)
+        W = calculate_W_matrix(distances_embedded=distances_embedded, X_embedded=X_embedded, use_approximation=umap_approx_W, min_dist=min_dist, spread=spread)
         W = _apply_sort_order(W, order)
         matrix_heatmap(V, title='V matrix heatmap',vmin=vmin, vmax=1, ax=ax3)
         matrix_heatmap(W, title='W matrix heatmap',vmin=vmin, vmax=1, ax=ax4)
