@@ -5,7 +5,7 @@ from scipy.sparse import coo_matrix
 from scipy.optimize import curve_fit
 from .plotting import matrix_heatmap, _hsort
 
-def calculate_V_matrix(distances_original=None, indices=None, X_original=None ,k_neighbours=15, n_steps=100, tolerance = 1e-5):
+def calculate_V_matrix(distances_original=None, indices=None, X_original=None ,k_neighbours=15, n_steps=100, tolerance = 1e-5, asymmetric=False):
     if X_original is not None:
         nn = NearestNeighbors(n_neighbors=k_neighbours, metric='euclidean')
         nn.fit(X_original)
@@ -54,6 +54,8 @@ def calculate_V_matrix(distances_original=None, indices=None, X_original=None ,k
     data = similarities.flatten()
     V = coo_matrix((data, (rows, cols)), shape=(n, n))
     V = V.toarray()
+    if asymmetric:
+        return V
     V = V + V.T - V * V.T
     return V
 

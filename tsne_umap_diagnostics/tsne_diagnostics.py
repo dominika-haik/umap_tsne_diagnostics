@@ -2,7 +2,7 @@ import numpy as np
 import sklearn.metrics as metrics
 from .plotting import matrix_heatmap, _hsort
 
-def calculate_P_matrix(distances_original=None, X_original=None, perplexity=30, n_steps=100, tolerance = 1e-5):
+def calculate_P_matrix(distances_original=None, X_original=None, perplexity=30, n_steps=100, tolerance = 1e-5, asymmetric=False):
     if X_original is not None:
         distances_original = metrics.pairwise_distances(X_original)
 
@@ -51,6 +51,8 @@ def calculate_P_matrix(distances_original=None, X_original=None, perplexity=30, 
                     variance /= 2.0
                 else:
                     variance = (variance + min_value) / 2.0
+    if asymmetric:
+        return P
     P = (P + P.T) / (2 * n_samples)
     return P
 
