@@ -6,17 +6,31 @@ from scipy.optimize import curve_fit
 from .plotting import matrix_heatmap, _hsort
 
 def calculate_V_matrix(distances_original=None, indices=None, X_original=None ,k_neighbours=15, n_steps=100, tolerance = 1e-5, asymmetric=False):
+    """
+    Calculates the V matrix, which represents pairwise similarities between points in the original space.
+
+    Parameters:
+        distances_original (np.ndarray, optional): Precomputed pairwise distances between points.
+        indices (np.ndarray, optional): Indices of nearest neighbors for each point.
+        X_original (np.ndarray, optional): Original data points. If provided, distances and indices are computed using euclidean distance as the metric.
+        k_neighbours (int, optional): Number of nearest neighbors to consider. Default is 15.
+        n_steps (int, optional): Number of steps for binary search to optimize sigmas. Default is 100.
+        tolerance (float, optional): Tolerance for stopping the binary search. Default is 1e-5.
+        asymmetric (bool, optional): If True, returns the asymmetric V matrix. Default is False.
+
+    Returns:
+        np.ndarray: The symmetric or asymmetric V matrix.
+    """
     if X_original is not None:
         nn = NearestNeighbors(n_neighbors=k_neighbours, metric='euclidean')
         nn.fit(X_original)
         distances_original, indices = nn.kneighbors(X_original)
 
     n = distances_original.shape[0]
-    desired_value = np.log2(k_neighbours)  # for binary search
-    distances = distances_original[:, 1:]  # self-reference
-    indices = indices[:, 1:]      # self-reference
+    desired_value = np.log2(k_neighbours)  # Target entropy value for binary search
+    distances = distances_original[:, 1:]  # Exclude self-reference
+    indices = indices[:, 1:]      # Exclude self-reference
     k_neighbours -= 1
-    # A 1D array of rho_i
     rhos = distances[:, 0]
     sigmas = np.zeros(n)
 
@@ -25,7 +39,7 @@ def calculate_V_matrix(distances_original=None, indices=None, X_original=None ,k
         max_value = np.inf
         sigmas[i] = 1 / np.mean(distances[i])
 
-        # binary search
+        # Binary search to optimize sigmas
         for _ in range(n_steps):
             vi = np.exp((-np.maximum(0, distances[i] - rhos[i])) / sigmas[i])
             entropy = np.sum(vi)
@@ -34,20 +48,21 @@ def calculate_V_matrix(distances_original=None, indices=None, X_original=None ,k
             if np.abs(entropy_diff) <= tolerance:
                 break
 
-            # Next, adjust variance and bounds (min/max values)
-            if entropy_diff < 0:  # entropy too small, increase variance
+            # Adjust variance and bounds
+            if entropy_diff < 0:  # Entropy too small, increase variance
                 min_value = sigmas[i]
                 if max_value == np.inf:
                     sigmas[i] *= 2.0
                 else:
                     sigmas[i] = (sigmas[i] + max_value) / 2.0
-            else:
+            else:   # Entropy too large, decrease variance
                 max_value = sigmas[i]
                 if min_value == -np.inf:
                     sigmas[i] /= 2.0
                 else:
                     sigmas[i] = (sigmas[i] + min_value) / 2.0
 
+    # Compute pairwise similarities
     similarities = np.exp((-np.maximum(0, distances - rhos[:, np.newaxis])) / sigmas[:, np.newaxis])
     rows = np.repeat(np.arange(n), k_neighbours)
     cols = indices.flatten()
@@ -56,10 +71,10 @@ def calculate_V_matrix(distances_original=None, indices=None, X_original=None ,k
     V = V.toarray()
     if asymmetric:
         return V
-    V = V + V.T - V * V.T
+    V = V + V.T - V * V.T   # Symmetrize the matrix
     return V
 
-def show_V_heatmap(distances_original=None, indices=None, X_original=None ,k_neighbours=15, n_steps=100, tolerance = 1e-5, title='V matrix heatmap', vmin=0, vmax=1, ax=None):
+def get_V_heatmap(distances_original=None, indices=None, X_original=None ,k_neighbours=15, n_steps=100, tolerance = 1e-5, title='V matrix heatmap', vmin=0, vmax=1, ax=None):
     V = calculate_V_matrix(distances_original, indices, X_original ,k_neighbours, n_steps, tolerance)
     V = _hsort(V)
     return matrix_heatmap(matrix=V, title=title, vmin=vmin, vmax=vmax, ax=ax)
@@ -90,7 +105,7 @@ def approximate_W(distances_embedded, min_dist=0.1, spread=1.0):
     np.fill_diagonal(W_approx, 0)
     return W_approx
 
-def show_W_heatmap(distances_embedded=None, X_embedded=None, use_approximation=False, min_dist=0.1, spread=1.0, title='W matrix heatmap', vmin=0, vmax=1, ax=None):
+def get_W_heatmap(distances_embedded=None, X_embedded=None, use_approximation=False, min_dist=0.1, spread=1.0, title='W matrix heatmap', vmin=0, vmax=1, ax=None):
     W = calculate_W_matrix(distances_embedded=distances_embedded, X_embedded=X_embedded, use_approximation=use_approximation, min_dist=min_dist, spread=spread)
     W = _hsort(W)
     return matrix_heatmap(matrix=W, title=title, vmin=vmin, vmax=vmax, ax=ax)
