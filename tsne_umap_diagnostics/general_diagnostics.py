@@ -56,10 +56,10 @@ def matrix_fit_plot(distances_original=None, distances_embedded=None, X_original
         X_embedded (np.ndarray, optional): Embedded data points. Used to compute distances if distances_embedded is None.
         method (str, optional): Dimensionality reduction method ('tsne' or 'umap'). Default is 'tsne'.
         asymmetric_matrix (bool, optional): Whether the similarity matrix is asymmetric. Default is False.
+        n_steps (int, optional): Number of steps for binary search in similarity computation. Default is 100.
 
         Parameters specific to t-SNE:
             perplexity (float, optional): Perplexity parameter for t-SNE. Default is 30.
-            n_steps (int, optional): Number of steps for binary search in similarity computation. Default is 100.
             tolerance (float, optional): Tolerance for stopping the binary search. Default is 1e-5.
 
         Parameters specific to UMAP:
@@ -104,10 +104,10 @@ def diagnostic_plots(distances_original=None, distances_embedded=None, X_origina
         X_embedded (np.ndarray, optional): Embedded data points. Used to compute distances if distances_embedded is None.
         method (str, optional): Dimensionality reduction method ('tsne' or 'umap'). Default is 'tsne'.
         asymmetric_matrix (bool, optional): Whether the similarity matrix is asymmetric. Default is False.
+        n_steps (int, optional): Number of steps for binary search in similarity computation. Default is 100.
 
         Parameters specific to t-SNE:
             perplexity (float, optional): Perplexity parameter for t-SNE. Default is 30.
-            n_steps (int, optional): Number of steps for binary search in similarity computation. Default is 100.
             tolerance (float, optional): Tolerance for stopping the binary search. Default is 1e-5.
 
         Parameters specific to UMAP:
