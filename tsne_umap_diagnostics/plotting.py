@@ -134,7 +134,7 @@ def _hierarchical_sort_order(matrix):
     D = 1 - matrix  # Convert similarity to dissimilarity (distance)
     np.fill_diagonal(D, 0)
     D_condense = squareform(D)
-    clustering = hierarchy.linkage(D_condense)
+    clustering = hierarchy.linkage(D_condense, method='complete')
     leaves_order = hierarchy.leaves_list(clustering)
     return leaves_order
 
