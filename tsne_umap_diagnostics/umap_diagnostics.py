@@ -117,7 +117,7 @@ def calculate_W_matrix(distances_embedded=None, X_embedded=None, use_approximati
     if use_approximation:
         return approximate_W(distances_embedded=distances_embedded, min_dist=min_dist, spread=spread)
 
-    W = np.where(distances_embedded <= min_dist, 1, np.exp(-distances_embedded - min_dist))
+    W = np.where(distances_embedded <= min_dist, 1, np.exp(-(distances_embedded - min_dist)))
     np.fill_diagonal(W, 0)  # Set diagonal to 0 to ignore self-similarity
     return W
 
