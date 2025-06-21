@@ -1,6 +1,7 @@
 import sklearn.metrics as metrics
 import matplotlib.pyplot as plt
 import numpy as np
+import warnings
 
 from .plotting import plot_distances, plot_similarities, _hierarchical_sort_order, _apply_sort_order, matrix_heatmap, plot_cost, plot_score
 from .umap_diagnostics import calculate_V_matrix, calculate_W_matrix
@@ -76,6 +77,10 @@ def matrix_fit_plot(distances_original=None, distances_embedded=None, X_original
     Returns:
         matplotlib.figure.Figure or None: The figure object if a new figure is created, otherwise None.
     """
+    if method != 'umap':
+        if k_neighbours != 15 or min_dist != 0.1 or spread != 1.0 or umap_knn_indices is not None or umap_approx_W:
+            warnings.warn("You passed UMAP-related parameters, but method is not 'umap'. These will be ignored.")
+
     if X_original is not None and X_embedded is not None:
         distances_original = metrics.pairwise_distances(X_original)
         distances_embedded = metrics.pairwise_distances(X_embedded)
@@ -125,6 +130,9 @@ def diagnostic_plots(distances_original=None, distances_embedded=None, X_origina
     Returns:
         tuple: A tuple containing the figure object and an array of axes objects.
     """
+    if method != 'umap':
+        if k_neighbours != 15 or min_dist != 0.1 or spread != 1.0 or umap_knn_indices is not None or umap_approx_W:
+            warnings.warn("You passed UMAP-related parameters, but method is not 'umap'. These will be ignored.")
 
     if X_original is not None:
         n_samples = X_original.shape[0]
@@ -230,6 +238,10 @@ def plot_individual_cost(X_original=None, X_embedded=None, method='tsne', umap_k
     Returns:
         matplotlib.figure.Figure or None: The figure object if a new figure is created, otherwise None.
     """
+    if method != 'umap':
+        if k_neighbours != 15 or min_dist != 0.1 or spread != 1.0 or umap_knn_indices is not None or umap_approx_W:
+            warnings.warn("You passed UMAP-related parameters, but method is not 'umap'. These will be ignored.")
+
     if X_embedded.shape[1] > 2:
         raise ValueError('X_embedded must be one- or two-dimensional')
 
@@ -294,6 +306,10 @@ def plot_outlier_score(X_original=None, X_embedded=None, method='tsne', umap_knn
         Returns:
             matplotlib.figure.Figure or None: The figure object if a new figure is created, otherwise None.
         """
+    if method != 'umap':
+        if k_neighbours != 15 or umap_knn_indices is not None:
+            warnings.warn("You passed UMAP-related parameters, but method is not 'umap'. These will be ignored.")
+
     if X_embedded.shape[1] > 2:
         raise ValueError('X_embedded must be one- or two-dimensional')
 
