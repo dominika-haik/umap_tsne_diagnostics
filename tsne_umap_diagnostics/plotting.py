@@ -1,6 +1,8 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib.cm as cm
+import matplotlib.colors as mcolors
 import seaborn as sns
 import scipy.cluster.hierarchy as hierarchy
 from scipy.spatial.distance import squareform
@@ -163,3 +165,54 @@ def _hsort(matrix):
     """
     order = _hierarchical_sort_order(matrix)
     return _apply_sort_order(matrix, order)
+
+def plot_cost(X_embedded, cost, title='Cost Plot', ax=None):
+    """
+        Plots the individual cost values for each data point in the embedded (low-dimensional) space.
+        Each point in the embedding is colored according to its associated cost value, allowing for visual identification of points with high or low cost.
+
+        Parameters:
+            X_embedded (np.ndarray): Low-dimensional embedding of the data (shape: n_samples x n_components).
+            cost (array-like): Cost values associated with each data point (length: n_samples).
+            title (str, optional): Title of the plot. Default is 'Cost Plot'.
+            ax (matplotlib.axes.Axes, optional): Axes object to plot on. If None, a new figure and axes are created.
+
+        Returns:
+            matplotlib.figure.Figure or None: The figure object if a new figure is created, otherwise None.
+        """
+    created_fig = False
+    if ax is None:
+        fig, ax = plt.subplots()
+        created_fig = True
+    else:
+        fig = ax.figure
+
+    if X_embedded.shape[1] != 2:
+        data = pd.DataFrame({
+            'x coordinate': X_embedded[:, 0],
+            'y coordinate': X_embedded.shape[0] * [1], # Dummy y-coordinate for 1D data
+            'cost': cost
+        })
+    else:
+        data = pd.DataFrame({
+            'x coordinate': X_embedded[:, 0],
+            'y coordinate': X_embedded[:, 1],
+            'cost': cost
+        })
+
+    # For the colour bar
+    norm = mcolors.Normalize(vmin=data['cost'].min(), vmax=data['cost'].max())
+    sm = cm.ScalarMappable(cmap="Reds", norm=norm)
+    sm.set_array([])
+
+    sns.scatterplot(data=data, x='x coordinate', y='y coordinate', hue=cost, palette='Reds', hue_norm=norm, alpha=0.7, ax=ax, legend=False)
+    sns.despine()
+    ax.set_title(title)
+    ax.set_xlabel("Component 1")
+    ax.set_ylabel("Component 2" if X_embedded.shape[1] == 2 else "")
+    if X_embedded.shape[1] == 1:
+        ax.set_yticks([])
+    cbar = plt.colorbar(sm, ax=ax)
+    ax.set_aspect('equal', adjustable='datalim')
+
+    return fig if created_fig else None

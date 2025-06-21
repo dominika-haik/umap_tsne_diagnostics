@@ -1,7 +1,8 @@
 import sklearn.metrics as metrics
 import matplotlib.pyplot as plt
+import numpy as np
 
-from .plotting import plot_distances, plot_similarities, _hierarchical_sort_order, _apply_sort_order, matrix_heatmap
+from .plotting import plot_distances, plot_similarities, _hierarchical_sort_order, _apply_sort_order, matrix_heatmap, plot_cost
 from .umap_diagnostics import calculate_V_matrix, calculate_W_matrix
 from .tsne_diagnostics import calculate_P_matrix, calculate_Q_matrix
 
@@ -165,3 +166,85 @@ def diagnostic_plots(distances_original=None, distances_embedded=None, X_origina
     plt.suptitle(title)
     plt.tight_layout()
     return fig, axs
+
+def kl_divergence(a, b, j):
+    """
+    Calculates the Kullback-Leibler (KL) divergence between two probability arrays a and b,
+    excluding the j-th entry (the diagonal).
+
+    Parameters:
+        a (np.ndarray): First probability distribution (1D array).
+        b (np.ndarray): Second probability distribution (1D array).
+        j (int): Index to exclude from the calculation (the diagonal).
+
+    Returns:
+        float: The KL divergence between a and b, excluding the j-th entry.
+    """
+    mask = np.arange(len(a)) != j
+    return np.sum(a[mask] * np.log(a[mask] / b[mask]))
+
+def individual_cost(P, Q):
+    """
+        Calculates the individual Kullback-Leibler (KL) divergence cost for each row of the similarity matrices P and Q.
+        Can also be used to compute the cost for each row of the V and W matrices in UMAP, but KL divergence is originally used in t-SNE.
+
+        For each index i, computes the KL divergence between the i-th row of P and the i-th row of Q,
+        excluding the i-th entry (typically the diagonal), and returns a list of these costs.
+
+        Parameters:
+            P (np.ndarray): High-dimensional, asymmetric similarity matrix, P or V (2D array).
+            Q (np.ndarray): Low-dimensional similarity matrix, Q or W (2D array).
+
+        Returns:
+            list: A list of KL divergence values, one for each row in the similarity matrices.
+        """
+    C = [kl_divergence(P[i], Q[i], i) for i in range(len(P))]
+    return C
+
+def plot_individual_cost(X_original=None, X_embedded=None, method='tsne', umap_knn_indices=None, umap_approx_W=False,
+                    perplexity=30, n_steps=100, tolerance = 1e-5, k_neighbours=15, min_dist=0.1, spread=1.0, title='Individual cost plot', ax=None):
+    """
+    Plots the individual Kullback-Leibler (KL) divergence cost for each data point after dimensionality reduction.
+
+    Parameters:
+        X_original (np.ndarray, optional): Original high-dimensional data.
+        X_embedded (np.ndarray, optional): Embedded one- or two-dimensional data.
+        method (str, optional): Dimensionality reduction method ('tsne' or 'umap'). Default is 'tsne'.
+        title (str, optional): Title of the plot. Default is 'Individual cost plot'.
+        ax (matplotlib.axes.Axes, optional): Axes object to plot on. If None, a new figure and axes are created.
+        n_steps (int, optional): Number of steps for binary search in similarity computation. Default is 100.
+
+        t-SNE specific:
+            perplexity (float, optional): Perplexity parameter for t-SNE. Default is 30.
+            tolerance (float, optional): Tolerance for stopping the binary search. Default is 1e-5.
+
+        UMAP specific:
+            umap_knn_indices (np.ndarray, optional): Precomputed k-nearest neighbors indices for UMAP. Default is None.
+            umap_approx_W (bool, optional): Whether to use an approximation for the W matrix in UMAP. Default is False.
+            k_neighbours (int, optional): Number of neighbors for UMAP. Default is 15.
+            min_dist (float, optional): Minimum distance for UMAP similarity computation. Default is 0.1.
+            spread (float, optional): Spread parameter for UMAP similarity computation. Default is 1.0.
+
+    Returns:
+        matplotlib.figure.Figure or None: The figure object if a new figure is created, otherwise None.
+    """
+    if X_embedded.shape[1] > 2:
+        raise ValueError('X_embedded must be one- or two-dimensional')
+
+    if method == 'tsne':
+        # Asymmetric hd matrix
+        hd_matrix = calculate_P_matrix(distances_original=None, X_original=X_original,
+                                       perplexity=perplexity, n_steps=n_steps, tolerance=tolerance, asymmetric=True)
+        ld_matrix = calculate_Q_matrix(distances_embedded=None, X_embedded=X_embedded)
+    elif method == 'umap':
+        # Asymmetric hd matrix
+        hd_matrix = calculate_V_matrix(distances_original=None, indices=umap_knn_indices,
+                                       X_original=X_original, k_neighbours=k_neighbours, n_steps=n_steps,
+                                       tolerance=tolerance, asymmetric=True)
+        ld_matrix = calculate_W_matrix(distances_embedded=None, X_embedded=X_embedded,
+                                       use_approximation=umap_approx_W, min_dist=min_dist, spread=spread)
+    else:
+        raise ValueError('Method must be either "tsne" or "umap"')
+
+    cost = individual_cost(hd_matrix, ld_matrix)
+    return plot_cost(X_embedded=X_embedded, cost=cost, title=title, ax=ax)
