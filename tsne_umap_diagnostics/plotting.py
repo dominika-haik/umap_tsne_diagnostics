@@ -172,7 +172,7 @@ def plot_cost(X_embedded, cost, title='Cost Plot', ax=None):
         Each point in the embedding is colored according to its associated cost value, allowing for visual identification of points with high or low cost.
 
         Parameters:
-            X_embedded (np.ndarray): Low-dimensional embedding of the data (shape: n_samples x n_components).
+            X_embedded (np.ndarray): Low-dimensional (1D or 2D) embedding of the data (shape: n_samples x n_components).
             cost (array-like): Cost values associated with each data point (length: n_samples).
             title (str, optional): Title of the plot. Default is 'Cost Plot'.
             ax (matplotlib.axes.Axes, optional): Axes object to plot on. If None, a new figure and axes are created.
@@ -206,6 +206,59 @@ def plot_cost(X_embedded, cost, title='Cost Plot', ax=None):
     sm.set_array([])
 
     sns.scatterplot(data=data, x='x coordinate', y='y coordinate', hue=cost, palette='Reds', hue_norm=norm, alpha=0.7, ax=ax, legend=False)
+    sns.despine()
+    ax.set_title(title)
+    ax.set_xlabel("Component 1")
+    ax.set_ylabel("Component 2" if X_embedded.shape[1] == 2 else "")
+    if X_embedded.shape[1] == 1:
+        ax.set_yticks([])
+    cbar = plt.colorbar(sm, ax=ax)
+    ax.set_aspect('equal', adjustable='datalim')
+
+    return fig if created_fig else None
+
+def plot_score(X_embedded, score, title='Outlier Score Plot', ax=None, vmin=0, vmax=0.3):
+    """
+        Plots the outlier score values for each data point in the embedded (low-dimensional) space.
+        Each point in the embedding is colored according to its associated cost value,
+        allowing for visual identification of points with high or low likeliness of being outliers.
+        Similar to the cost plot, but the colour map is reversed.
+
+        Parameters:
+            X_embedded (np.ndarray): Low-dimensional (1D or 2D) embedding of the data (shape: n_samples x n_components).
+            score (array-like): Outlier score values associated with each data point (length: n_samples).
+            title (str, optional): Title of the plot. Default is 'Outlier Score Plot'.
+            ax (matplotlib.axes.Axes, optional): Axes object to plot on. If None, a new figure and axes are created.
+
+        Returns:
+            matplotlib.figure.Figure or None: The figure object if a new figure is created, otherwise None.
+        """
+    created_fig = False
+    if ax is None:
+        fig, ax = plt.subplots()
+        created_fig = True
+    else:
+        fig = ax.figure
+
+    if X_embedded.shape[1] != 2:
+        data = pd.DataFrame({
+            'x coordinate': X_embedded[:, 0],
+            'y coordinate': X_embedded.shape[0] * [1], # Dummy y-coordinate for 1D data
+            'score': score
+        })
+    else:
+        data = pd.DataFrame({
+            'x coordinate': X_embedded[:, 0],
+            'y coordinate': X_embedded[:, 1],
+            'score': score
+        })
+
+    # For the colour bar
+    norm = mcolors.Normalize(vmin=vmin, vmax=vmax)
+    sm = cm.ScalarMappable(cmap="Reds_r", norm=norm)
+    sm.set_array([])
+
+    sns.scatterplot(data=data, x='x coordinate', y='y coordinate', hue=score, palette='Reds_r', hue_norm=norm, alpha=0.7, ax=ax, legend=False)
     sns.despine()
     ax.set_title(title)
     ax.set_xlabel("Component 1")
