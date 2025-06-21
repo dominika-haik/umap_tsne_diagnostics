@@ -257,6 +257,12 @@ def plot_individual_cost(X_original=None, X_embedded=None, method='tsne', umap_k
                                        tolerance=tolerance, asymmetric=True)
         ld_matrix = calculate_W_matrix(distances_embedded=None, X_embedded=X_embedded,
                                        use_approximation=umap_approx_W, min_dist=min_dist, spread=spread)
+        # Add small epsilon and normalize to avoid division by zero
+        epsilon = 1e-12
+        ld_matrix += epsilon
+        hd_matrix += epsilon
+        ld_matrix /= np.sum(ld_matrix, axis=1, keepdims=True)
+        hd_matrix /= np.sum(hd_matrix, axis=1, keepdims=True)
     else:
         raise ValueError('Method must be either "tsne" or "umap"')
 
