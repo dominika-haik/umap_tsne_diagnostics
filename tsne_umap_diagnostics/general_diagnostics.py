@@ -104,7 +104,7 @@ def diagnostic_plots(distances_original=None, distances_embedded=None, X_origina
         X_original (np.ndarray, optional): Original data points. Used to compute distances if distances_original is None.
         X_embedded (np.ndarray, optional): Embedded data points. Used to compute distances if distances_embedded is None.
         method (str, optional): Dimensionality reduction method ('tsne' or 'umap'). Default is 'tsne'.
-        asymmetric_matrix (bool, optional): Whether the similarity matrix is asymmetric. Default is False.
+        asymmetric_matrix (bool, optional): Whether the high-dimensional similarity matrix is asymmetric. Default is False.
         n_steps (int, optional): Number of steps for binary search in similarity computation. Default is 100.
 
         Parameters specific to t-SNE:
@@ -144,7 +144,7 @@ def diagnostic_plots(distances_original=None, distances_embedded=None, X_origina
                     perplexity=perplexity, n_steps=n_steps, tolerance=tolerance, k_neighbours=k_neighbours, min_dist=min_dist, spread=spread,
                     ax=ax2)
     if method == 'tsne':
-        P = calculate_P_matrix(distances_original=distances_original, X_original=X_original, perplexity=perplexity, n_steps=n_steps, tolerance=tolerance)
+        P = calculate_P_matrix(distances_original=distances_original, X_original=X_original, perplexity=perplexity, n_steps=n_steps, tolerance=tolerance, asymmetric=asymmetric_matrix)
         order = _hierarchical_sort_order(P)
         P = _apply_sort_order(P, order)
         Q = calculate_Q_matrix(distances_embedded=distances_embedded, X_embedded=X_embedded)
@@ -152,7 +152,7 @@ def diagnostic_plots(distances_original=None, distances_embedded=None, X_origina
         matrix_heatmap(matrix=P, title='P matrix heatmap', vmin=vmin, vmax=vmax, ax=ax3)
         matrix_heatmap(matrix=Q, title='Q matrix heatmap',vmin=vmin, vmax=vmax, ax=ax4)
     elif method == 'umap':
-        V = calculate_V_matrix(distances_original=distances_original, indices=umap_knn_indices, X_original=X_original, k_neighbours=k_neighbours, n_steps=n_steps, tolerance=tolerance)
+        V = calculate_V_matrix(distances_original=distances_original, indices=umap_knn_indices, X_original=X_original, k_neighbours=k_neighbours, n_steps=n_steps, tolerance=tolerance, asymmetric=asymmetric_matrix)
         order = _hierarchical_sort_order(V)
         V = _apply_sort_order(V, order)
         W = calculate_W_matrix(distances_embedded=distances_embedded, X_embedded=X_embedded, use_approximation=umap_approx_W, min_dist=min_dist, spread=spread)
