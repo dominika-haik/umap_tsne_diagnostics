@@ -168,3 +168,32 @@ def get_W_heatmap(distances_embedded=None, X_embedded=None, use_approximation=Fa
     W = calculate_W_matrix(distances_embedded=distances_embedded, X_embedded=X_embedded, use_approximation=use_approximation, min_dist=min_dist, spread=spread)
     W = _hsort(W)   # Sort the matrix with hierarchical clustering
     return matrix_heatmap(matrix=W, title=title, vmin=vmin, vmax=vmax, ax=ax)
+
+def cross_entropy(a, b, j):
+    """
+    Computes the cross-entropy between two probability distributions, excluding the j-th element.
+
+    Parameters:
+        a (np.ndarray): The first probability distribution (e.g., row from V matrix).
+        b (np.ndarray): The second probability distribution (e.g., row from W matrix).
+        j (int): The index to exclude from the calculation (typically the self-similarity).
+
+    Returns:
+        float: The cross-entropy value for the given row, excluding the j-th element.
+    """
+    mask = np.arange(len(a)) != j
+    return np.sum(a[mask] * np.log(a[mask] / b[mask]) + (1 - a[mask]) * np.log((1 - a[mask]) / (1 - b[mask])))
+
+def umap_individual_cost(V, W):
+    """
+    Computes the individual UMAP cost (cross-entropy) for each data point.
+
+    Parameters:
+        V (np.ndarray): The V matrix representing pairwise similarities in the original space.
+        W (np.ndarray): The W matrix representing pairwise similarities in the embedded space.
+
+    Returns:
+        list: A list of cross-entropy values, one for each data point.
+    """
+    C = [cross_entropy(V[i], W[i], i) for i in range(len(V))]
+    return C

@@ -130,3 +130,36 @@ def get_Q_heatmap(distances_embedded=None, X_embedded=None, title='Q matrix heat
     Q = calculate_Q_matrix(distances_embedded=distances_embedded, X_embedded=X_embedded)
     Q = _hsort(Q)
     return matrix_heatmap(matrix=Q, title=title, vmin=vmin, vmax=vmax, ax=ax)
+
+def kl_divergence(a, b, j):
+    """
+    Calculates the Kullback-Leibler (KL) divergence between two probability arrays a and b,
+    excluding the j-th entry (the diagonal).
+
+    Parameters:
+        a (np.ndarray): First probability distribution (1D array).
+        b (np.ndarray): Second probability distribution (1D array).
+        j (int): Index to exclude from the calculation (the diagonal).
+
+    Returns:
+        float: The KL divergence between a and b, excluding the j-th entry.
+    """
+    mask = np.arange(len(a)) != j
+    return np.sum(a[mask] * np.log(a[mask] / b[mask]))
+
+def tsne_individual_cost(P, Q):
+    """
+        Calculates the individual Kullback-Leibler (KL) divergence cost for each row of the similarity matrices P and Q.
+
+        For each index i, computes the KL divergence between the i-th row of P and the i-th row of Q,
+        excluding the i-th entry (typically the diagonal), and returns a list of these costs.
+
+        Parameters:
+            P (np.ndarray): High-dimensional, asymmetric similarity matrix, P (2D array).
+            Q (np.ndarray): Low-dimensional similarity matrix, Q (2D array).
+
+        Returns:
+            list: A list of KL divergence values, one for each row in the similarity matrices.
+        """
+    C = [kl_divergence(P[i], Q[i], i) for i in range(len(P))]
+    return C

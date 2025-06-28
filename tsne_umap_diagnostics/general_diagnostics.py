@@ -4,8 +4,8 @@ import numpy as np
 import warnings
 
 from .plotting import plot_distances, plot_similarities, _hierarchical_sort_order, _apply_sort_order, matrix_heatmap, plot_cost, plot_score
-from .umap_diagnostics import calculate_V_matrix, calculate_W_matrix
-from .tsne_diagnostics import calculate_P_matrix, calculate_Q_matrix
+from .umap_diagnostics import calculate_V_matrix, calculate_W_matrix, umap_individual_cost
+from .tsne_diagnostics import calculate_P_matrix, calculate_Q_matrix, tsne_individual_cost
 
 def distance_fit_plot(distances_original=None, distances_embedded=None, X_original=None, X_embedded=None, title='Fit plot of the original and embedded distances', ax=None):
     """
@@ -175,39 +175,6 @@ def diagnostic_plots(distances_original=None, distances_embedded=None, X_origina
     plt.tight_layout()
     return fig, axs
 
-def kl_divergence(a, b, j):
-    """
-    Calculates the Kullback-Leibler (KL) divergence between two probability arrays a and b,
-    excluding the j-th entry (the diagonal).
-
-    Parameters:
-        a (np.ndarray): First probability distribution (1D array).
-        b (np.ndarray): Second probability distribution (1D array).
-        j (int): Index to exclude from the calculation (the diagonal).
-
-    Returns:
-        float: The KL divergence between a and b, excluding the j-th entry.
-    """
-    mask = np.arange(len(a)) != j
-    return np.sum(a[mask] * np.log(a[mask] / b[mask]))
-
-def individual_cost(P, Q):
-    """
-        Calculates the individual Kullback-Leibler (KL) divergence cost for each row of the similarity matrices P and Q.
-        Can also be used to compute the cost for each row of the V and W matrices in UMAP, but KL divergence is originally used in t-SNE.
-
-        For each index i, computes the KL divergence between the i-th row of P and the i-th row of Q,
-        excluding the i-th entry (typically the diagonal), and returns a list of these costs.
-
-        Parameters:
-            P (np.ndarray): High-dimensional, asymmetric similarity matrix, P or V (2D array).
-            Q (np.ndarray): Low-dimensional similarity matrix, Q or W (2D array).
-
-        Returns:
-            list: A list of KL divergence values, one for each row in the similarity matrices.
-        """
-    C = [kl_divergence(P[i], Q[i], i) for i in range(len(P))]
-    return C
 
 def plot_individual_cost(X_original=None, X_embedded=None, method='tsne', umap_knn_indices=None, umap_approx_W=False,
                     perplexity=30, n_steps=100, tolerance = 1e-5, k_neighbours=15, min_dist=0.1, spread=1.0, title='Individual cost plot', ax=None):
@@ -250,6 +217,7 @@ def plot_individual_cost(X_original=None, X_embedded=None, method='tsne', umap_k
         hd_matrix = calculate_P_matrix(distances_original=None, X_original=X_original,
                                        perplexity=perplexity, n_steps=n_steps, tolerance=tolerance, asymmetric=True)
         ld_matrix = calculate_Q_matrix(distances_embedded=None, X_embedded=X_embedded)
+        cost = tsne_individual_cost(hd_matrix, ld_matrix)
     elif method == 'umap':
         # Asymmetric hd matrix
         hd_matrix = calculate_V_matrix(distances_original=None, indices=umap_knn_indices,
@@ -263,10 +231,10 @@ def plot_individual_cost(X_original=None, X_embedded=None, method='tsne', umap_k
         hd_matrix += epsilon
         ld_matrix /= np.sum(ld_matrix, axis=1, keepdims=True)
         hd_matrix /= np.sum(hd_matrix, axis=1, keepdims=True)
+        cost = umap_individual_cost(hd_matrix, ld_matrix)
     else:
         raise ValueError('Method must be either "tsne" or "umap"')
 
-    cost = individual_cost(hd_matrix, ld_matrix)
     return plot_cost(X_embedded=X_embedded, cost=cost, title=title, ax=ax)
 
 def outlier_score(hd_matrix):
